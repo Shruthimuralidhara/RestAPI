@@ -1,0 +1,126 @@
+package com.restAPI.Tests;
+
+import java.io.IOException;
+import java.util.HashMap;
+
+import org.apache.http.Header;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
+import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import com.restAPI.RestClient.RestClient;
+import com.restAPI.Utilities.Utility;
+import com.restAPI.driver.Base;
+
+public class POST_TestCase extends Base{
+
+	public POST_TestCase() throws IOException {
+		super();
+		
+	}
+	
+	
+
+	//Global variables
+	Base driver ; 
+	String serviceURL,apiURL,url;
+	RestClient restClient;
+	CloseableHttpResponse closeablehttpResponse;
+	
+
+	
+	@BeforeMethod 
+	public void initialize() throws IOException
+	{
+		driver = new Base();
+		serviceURL = prop.getProperty("serviceurl");
+		apiURL = prop.getProperty("apiurl");
+		url = serviceURL.concat(apiURL);
+
+	}
+	
+	
+	@Test
+	public void postTest() throws ClientProtocolException, IOException
+	{
+		restClient = new RestClient();
+				
+		//Add header
+		HashMap<String,String> headerMap = new HashMap<String,String>();
+		headerMap.put("Content-Type", "application/json");
+		
+		
+			//jackson API:
+			ObjectMapper mapper = new ObjectMapper();
+			Users users = new Users("morpheus", "leader"); //expected users obejct
+			
+			//object to json file:
+			mapper.writeValue(new File("/Users/NaveenKhunteta/Documents/APIAutomationHTTPClient/APIAutomationUsingHTTPClient/src/main/java/com/qa/data/users.json"), users);
+			
+			//java object to json in String:
+			String usersJsonString = mapper.writeValueAsString(users);
+			System.out.println(usersJsonString);
+			
+			closebaleHttpResponse = restClient.post(url, usersJsonString, headerMap); //call the API
+			
+			//validate response from API:
+			//1. status code:
+			int statusCode = closebaleHttpResponse.getStatusLine().getStatusCode();
+			Assert.assertEquals(statusCode, testBase.RESPONSE_STATUS_CODE_201);
+			
+			//2. JsonString:
+			String responseString = EntityUtils.toString(closebaleHttpResponse.getEntity(), "UTF-8");
+			
+			JSONObject responseJson = new JSONObject(responseString);
+			System.out.println("The response from API is:"+ responseJson);
+			
+			//json to java object:
+			Users usersResObj = mapper.readValue(responseString, Users.class); //actual users object
+			System.out.println(usersResObj);
+			
+			Assert.assertTrue(users.getName().equals(usersResObj.getName()));
+			
+			Assert.assertTrue(users.getJob().equals(usersResObj.getJob()));
+			
+			System.out.println(usersResObj.getId());
+			System.out.println(usersResObj.getCreatedAt());
+			
+		}
+		//Obtain status code
+		int statusCode = closeablehttpResponse.getStatusLine().getStatusCode();
+		System.out.println("Status Code is "+statusCode);
+		Assert.assertEquals(statusCode, RESPONSE_STATUS_CODE_200,"Status code is not as expected");
+				
+		
+		String responseString = EntityUtils.toString(closeablehttpResponse.getEntity(),"UTF-8");
+		JSONObject responseJSONobject = new JSONObject(responseString);
+		System.out.println("The response JSON from API is "+responseJSONobject);
+		
+		
+		//To get value of single field in JSON response
+		
+		//Obtain response JSON --- From single name -value pair
+		String perPageValue = Utility.getValueByJPath(responseJSONobject,"/per_page");
+		System.out.println("Value of per page value is "+perPageValue);
+		Assert.assertEquals(Integer.parseInt(perPageValue), 3);
+		
+		//Obtain response JSON --- Complex JSON path
+		String firstName = Utility.getValueByJPath(responseJSONobject, "/data[0]/first_name");
+		System.out.println("FirstName is "+firstName);
+		Assert.assertEquals(firstName, "George");
+		
+		//Validate the headers
+		Header[] headers = closeablehttpResponse.getAllHeaders();
+		HashMap<String,String> allHeaders = new HashMap<String,String>();
+		for(Header header : headers)
+		{
+			allHeaders.put(header.getName(), header.getValue());
+		}
+		System.out.println("Headers of the api is "+allHeaders);
+	}
+
+}

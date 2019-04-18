@@ -1,0 +1,32 @@
+package com.restAPI.driver;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Properties;
+
+public class Driver {
+	
+	public Properties prop;
+	
+	//Constructor ::Read data from properties file
+	public Driver() throws IOException
+	{
+		try {
+			prop = new Properties();
+			FileInputStream ip = new FileInputStream(System.getProperty("C:\\Users\\Shruthi Muralidhara\\Desktop\\API_Testing\\restapi\\src\\main\\java\\com\\restAPI\\Configurations\\config.properties"));
+			//.out.println(ip.toString());
+			prop.load(ip);
+		}catch(FileNotFoundException e)
+		
+			e.printStackTrace();
+		}catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	
+	
+
+}

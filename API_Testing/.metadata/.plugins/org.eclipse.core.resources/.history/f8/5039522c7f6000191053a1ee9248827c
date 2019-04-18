@@ -1,0 +1,39 @@
+package com.restAPI.Tests;
+
+import java.io.IOException;
+
+import org.testng.annotations.BeforeMethod;
+
+import com.restAPI.RestClient.RestClient;
+import com.restAPI.driver.Driver;
+
+public class GET_TestCase extends Driver {
+
+	//Global variables
+	Driver driver ; 
+	
+	public GET_TestCase() throws IOException {
+		super();
+		
+	}
+	
+	@BeforeMethod 
+	public void initialize() throws IOException
+	{
+		driver = new Driver();
+		String serviceURL = prop.getProperty("serviceurl");
+		String apiURL = prop.getProperty("apiurl");
+		String url = serviceURL.concat(apiURL);
+		RestClient restClient = new RestClient();
+		restClient.get(url);
+	}
+	
+	
+	@Test
+	public void getTest()
+	{
+		
+	}
+	
+
+}
