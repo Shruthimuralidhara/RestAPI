@@ -1,0 +1,74 @@
+package com.restAPI.Tests;
+
+import java.io.IOException;
+import java.util.HashMap;
+
+import org.apache.http.Header;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
+import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import com.restAPI.RestClient.RestClient;
+import com.restAPI.driver.Driver;
+
+public class GET_TestCase extends Driver {
+
+	public GET_TestCase() throws IOException {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+
+	//Global variables
+	Driver driver ; 
+	String serviceURL,apiURL,url;
+	RestClient restClient;
+	CloseableHttpResponse closeablehttpResponse;
+	
+
+	
+	@BeforeMethod 
+	public void initialize() throws IOException
+	{
+		driver = new Driver();
+		serviceURL = prop.getProperty("serviceurl");
+		apiURL = prop.getProperty("apiurl");
+		url = serviceURL.concat(apiURL);
+
+	}
+	
+	
+	@Test
+	public void getTest() throws ClientProtocolException, IOException
+	{
+		restClient = new RestClient();
+		restClient.get(url);
+		
+		//Obtain status code
+		int statusCode = closeablehttpResponse.getStatusLine().getStatusCode();
+		System.out.println("Status Code is "+statusCode);
+		Assert.assertEquals(statusCode, 200,"Status Code is not as expected");
+				
+		//Obtain response JSON
+		String responseString = EntityUtils.toString(closeablehttpResponse.getEntity(),"UTF-8");
+		JSONObject responseJSONobject = new JSONObject(responseString);
+		System.out.println("The response JSON from API is "+responseJSONobject);
+				
+		//Validate the headers
+		Header[] headers = closeablehttpResponse.getAllHeaders();
+		HashMap<String,String> allHeaders = new HashMap<String,String>();
+		for(Header header : headers)
+		{
+			allHeaders.put(header.getName(), header.getValue());
+		}
+		System.out.println("Headers of the api is "+allHeaders);
+	}
+	
+	
+	
+
+}
